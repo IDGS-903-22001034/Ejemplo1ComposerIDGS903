@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,13 +26,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.math.exp
 
 
 private val tarjetas:List<PersonajeTarjeta> = listOf(
@@ -43,8 +50,8 @@ private val tarjetas:List<PersonajeTarjeta> = listOf(
     PersonajeTarjeta("Celula","Cell conocido como Célula en España, es un bioandroide creado por la computadora del Dr. Gero, quien vino del futuro de la línea 3 con la intención de vengarse de Goku."),
     PersonajeTarjeta("Krillin","Amigo cercano de Goku y guerrero valiente, es un personaje del manga y anime de Dragon Ball."),
     PersonajeTarjeta("Trunks","Hijo de Vegeta y Bulma. Es un mestizo entre humano terrícola y Saiyano nacido en la Tierra, e hijo de Bulma y Vegeta"),
-    PersonajeTarjeta("Master Roshi","Maestro de artes marciales y mentor de Goku."),
-    PersonajeTarjeta("Majin Buu","También conocido como Boo original, es la forma original y pura de Majin-Boo, y la última forma de Boo que aparece en Dragon Ball Z.")
+    PersonajeTarjeta("Master_Roshi","Maestro de artes marciales y mentor de Goku."),
+    PersonajeTarjeta("Majin_Buu","También conocido como Boo original, es la forma original y pura de Majin-Boo, y la última forma de Boo que aparece en Dragon Ball Z.")
 )
 data class PersonajeTarjeta(val title: String, val body: String)
 //@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -68,19 +75,27 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun Personaje(name:String,color:Color,style:TextStyle){
-    Text(text = name)
+fun Personaje(name:String,color:Color, style:TextStyle, lines:Int=Int.MAX_VALUE){
+    Text(text = name, color = color, style = style, maxLines = lines)
 }
 @Composable
 fun Personajes(personaje: PersonajeTarjeta){
-    Column {
+    var expanded by remember { mutableStateOf(false)}
+    Column(
+        modifier = Modifier
+            .padding(start = 8.dp).clickable {
+                expanded=!expanded
+            }
+    ){
+
         Personaje(personaje.title,
             MaterialTheme.colorScheme.primary,
             MaterialTheme.typography.headlineMedium)
         Personaje(personaje.body,
             MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.typography.bodyMedium)
-
+            MaterialTheme.typography.bodyLarge,
+            if(expanded) Int.MAX_VALUE else 1
+            )
     }
 }
 @Composable
@@ -108,15 +123,20 @@ fun MyPersonajes(personaje: PersonajeTarjeta){
             modifier = Modifier.padding(8.dp)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            ImagenHeroe()
+            ImagenHeroe(personaje.title)
             Personajes(personaje)
         }
     }
 }
 @Composable
-fun ImagenHeroe(){
+fun ImagenHeroe(imageName:String){
+    val context = LocalContext.current
+    val ImageResId= remember(imageName){
+        context.resources.getIdentifier(imageName.lowercase(),"drawable",context.packageName)
+
+    }
     Image(
-        painter = painterResource(R.drawable.logo_dragonballapi),
+        painter = painterResource(id=ImageResId),
         contentDescription ="Goku",
         modifier= Modifier
             .padding(16.dp)
